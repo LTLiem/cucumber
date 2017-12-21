@@ -1,0 +1,83 @@
+package upskills.com;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.List;
+
+import cucumber.api.DataTable;
+import cucumber.api.java.en.*;
+import gherkin.formatter.model.DataTableRow;
+import oracle.sql.ARRAY;
+import oracle.sql.ArrayDescriptor;
+import upskills.utils.ConnectionInfo;
+import upskills.utils.RequestInfo;
+
+public class StepdefsForFeedData {
+	
+	String table;
+	String datasource;
+	String[] keyColumns;
+	String timeStamp;
+	int mRefId;
+	 
+	@Given("^I have a table data as below$")
+	public void i_have_a_table_data_as_below(DataTable testingDataSources) throws Throwable {
+		List<DataTableRow> rows = testingDataSources.getGherkinRows();
+		table = rows.get(1).getCells().get(0);
+	}
+
+	@Given("^from data source is \"(.*?)\"$")
+	public void from_data_source_is(String arg1) throws Throwable {
+		if(arg1.equalsIgnoreCase(ConnectionInfo.MXG2KTable) ){
+			this.datasource = ConnectionInfo.MXG2KTable;
+		} else if(arg1.equalsIgnoreCase(ConnectionInfo.MX3Table)) {
+			this.datasource = ConnectionInfo.MX3Table;
+		}
+	}
+	
+	@Given("^key columns is \"(.*?)\"$")
+	public void key_columns_is(String arg1) throws Throwable {
+		keyColumns = arg1.split(",");
+	}
+	
+	@Given("^M_Ref_ID for table is \"(.*?)\"$")
+	public void m_ref_id_for_table_is(int m_ref_id) throws Throwable {
+		mRefId = m_ref_id;
+	}
+
+	@Given("^Time stamp for table is \"(.*?)\"$")
+	public void time_stamp_for_table_is(String arg1) throws Throwable {
+		timeStamp = arg1;
+	}
+
+	
+	@When("^feed data$")
+	public void feed_data() throws Throwable {
+		Connection connection = null;
+		CallableStatement stmt = null;
+		String call = "{ call Reconcile.pkg_reconcile.feed_data(?,?,?,?,?) }";
+		try {
+			Class.forName ("oracle.jdbc.OracleDriver");
+			connection = DriverManager.getConnection("jdbc:oracle:thin:@//localhost:1521/xe","reconcile", "reconcile123");
+			stmt = connection.prepareCall(call);
+			stmt.setString(1, table + "@" + datasource);
+			stmt.setString(2, "TestingDB" + "_" + datasource);
+            
+			ArrayDescriptor des = ArrayDescriptor.createDescriptor("SchemaName.ARRAY_TABLE", connection);
+            ARRAY array_to_pass = new ARRAY(des,connection,keyColumns);
+			stmt.setArray(3, array_to_pass);
+			
+			stmt.setString(4, timeStamp);
+			stmt.setInt(5, mRefId);
+		}catch(Exception e) {
+			
+		}
+	}
+
+	@Then("^feed data is complete$")
+	public void feed_data_is_complete() throws Throwable {
+		System.out.println("---------------------------------Done");
+	}
+
+}

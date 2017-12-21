@@ -1,0 +1,13 @@
+Feature: Demo Reconciliation
+  
+  @Demo
+  Scenario: Feed Data
+    Given I have a table data as below
+    	| Table  |
+    	| Student |
+   	And from data source is "MXG2K"
+   	And key columns is "Age,ID"
+   	And M_Ref_ID for table is "2"
+   	And Time stamp for table is "19-AUG-15 12.05.38.000000000 PM"
+   	When feed data
+    Then feed data is complete

@@ -1,0 +1,13 @@
+Feature: Demo Reconciliation Compare Data
+  
+  @Demo
+  Scenario: Compare data from two datasources By using SQL
+    Given I have two data sources as below
+    	| Data Source  |
+    	| Student7 |
+    	| Student8  |
+   	And M_Ref_ID is '2'
+   	And Test case is "testcase1"
+   	And Time stamp is "19-AUG-15 12.05.38.000000000 PM"
+   	When compare data
+    Then compare data is complete
